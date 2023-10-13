@@ -1,0 +1,24 @@
+Oct 14 11:14:09 localhost Keepalived_healthcheckers[12652]: SMTP alert successfully sent.
+Oct 14 11:15:14 localhost kernel: IPVS: rr: TCP 192.168.118.2:80 - no destination available
+Oct 14 11:15:15 localhost kernel: IPVS: rr: TCP 192.168.118.2:80 - no destination available
+
+该错误消息表示没有可用的后端服务器。
+
+要解决此问题，您需要确保后端服务器处于运行状态。您可以使用以下命令来检查后端服务器的状态：
+
+ping <backend_ip>
+如果后端服务器处于运行状态，但仍然收到该错误消息，请检查后端服务器是否已配置为接收来自虚拟服务器的流量。您可以使用以下命令来检查后端服务器的配置：
+
+iptables -nL -t nat
+如果后端服务器已配置为接收来自虚拟服务器的流量，但仍然收到该错误消息，请检查虚拟服务器的配置是否正确。您可以使用以下命令来检查虚拟服务器的配置：
+
+ipvsadm -L
+如果虚拟服务器的配置正确，但仍然收到该错误消息，请重启 ipvsadm 服务：
+
+service ipvsadm restart
+
+
+
+ipvsadm  --save>/etc/sysconf/ipvsadm
+ipvsadm -A -t 192.168.118.2:80 -s rr
+ipvsadm -a -t 192.168.118.2:80 -r 192.168.107.131:80 -w 1
