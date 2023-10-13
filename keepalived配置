@@ -1,0 +1,80 @@
+global_defs {
+   notification_email {
+     acassen@firewall.loc
+   }
+   notification_email_from Alexandre.Cassen@firewall.loc
+   smtp_server 127.0.0.1
+   smtp_connect_timeout 30
+   router_id srv02
+}
+
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface ens33
+    virtual_router_id 51
+    priority 90
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+
+    virtual_ipaddress {
+        192.168.118.2/24 brd 192.168.118.2 dev ens33 label ens33:0
+    }
+    balance roundrobin
+    preempt delay 60
+}
+
+
+
+
+
+virtual_server 192.168.118.2 80 {
+    delay_loop 6
+    lb_algo rr
+    lb_kind DR
+    nat_mask 255.255.255.0
+    persistence_timeout 0
+    protocol TCP
+
+   # sorry_server 192.168.200.200 1358
+
+    # 后端应用服务器 IP PORT
+    real_server 192.168.107.131 80 {
+        weight 1
+        # 应用服务器UP或者DOWN，就执行那个脚本
+        notify_up "/usr/local/notify.sh 192.168.107.131 up"
+        notify_down "/usr/local/notify.sh 192.168.107.131 down"
+        HTTP_GET {
+            # 检测URL
+            url {
+              path /
+              # 除了检测哈希值还可以检测状态码，比如HTTP的200 表示正常，两种方法二选一即可
+              status_code 200
+            }
+            connect_timeout 3
+            nb_get_retry 3
+            delay_before_retry 3
+        }
+    }
+
+    real_server 172.16.42.130 80 {
+        weight 1
+        # 应用服务器UP或者DOWN，就执行那个脚本
+        notify_up "/usr/local/notify.sh 192.168.107.130 up"
+        notify_down "/usr/local/notify.sh 192.168.107.130 down"
+        HTTP_GET {
+            # 检测URL
+            url {
+              path /
+              # 除了检测哈希值还可以检测状态码，比如HTTP的200 表示正常，两种方法二选一即可
+              status_code 200
+            }
+            connect_timeout 3
+            nb_get_retry 3
+            delay_before_retry 3
+        }
+    }
+}
