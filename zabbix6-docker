@@ -1,0 +1,51 @@
+docker run --name zabbix_mysql-server -t \
+-v /etc/localtime:/etc/localtime -v /root/zabbix_dir/lib:/var/lib -v /root/zabbix_dir/mysql/logs:/var/log/mysql \
+-p 3306:3306 \
+-e MYSQL_DATABASE="zabbix" \
+-e MYSQL_USER="zabbix" \
+-e MYSQL_PASSWORD="HUEew123" \
+-e MYSQL_ROOT_PASSWORD="HUEew123456" \
+--network=zabbix-net \
+--restart unless-stopped \
+-d mysql:8.0-oracle \
+--character-set-server=utf8 --collation-server=utf8_bin
+
+
+
+docker run --name zabbix-java-gateway -t \
+--network=zabbix-net \
+--restart unless-stopped \
+-d zabbix/zabbix-java-gateway:alpine-6.4-latest
+
+
+
+docker run --name zabbix-server -t \
+-e DB_SERVER_HOST="zabbix_mysql-server" \
+-e MYSQL_DATABASE="zabbix" \
+-e MYSQL_USER="zabbix" \
+-e MYSQL_PASSWORD="HUEew123" \
+-e MYSQL_ROOT_PASSWORD="HUEew123456" \
+-e ZBX_JAVAGATEWAY="zabbix-java-gateway" \
+--network=zabbix-net \
+-p 10051:10051 \
+--restart unless-stopped \
+-d zabbix/zabbix-server-mysql:alpine-6.4-latest
+
+
+
+docker run --name zabbix-web-nginx-mysql -t \
+-e ZBX_SERVER_HOST="zabbix-server" \
+-e DB_SERVER_HOST="zabbix_mysql-server" \
+-e MYSQL_DATABASE="zabbix" \
+-e MYSQL_USER="zabbix" \
+-e MYSQL_PASSWORD="HUEew123" \
+-e MYSQL_ROOT_PASSWORD="HUEew123456" \
+--network=zabbix-net \
+-p 81:8080 \
+--restart unless-stopped \
+-d zabbix/zabbix-web-nginx-mysql:alpine-6.4-latest
+
+
+
+
+docker run --name agent01 -e ZBX_HOSTNAME="iZj6c9dagif7j5wyeky5u7Z" -e ZBX_SERVER_HOST="172.20.240.3"     -e ZBX_SERVER_PORT=10051   -p 10050:10050 --network=zabbix-net --init -d zabbix/zabbix-agent
