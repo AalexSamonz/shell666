@@ -1,0 +1,19 @@
+---
+- hosts: ddd
+  tasks:
+  - name: Test connection
+    shell: echo "1234567"|passwd --stdin root;useradd devuser;
+
+  vars:
+    ansible_user: root
+    ansible_password: 123456
+
+
+    ##注意 vim /etc/ansible/ansible.cfg,打开一下选项
+
+    # inject_facts_as_vars = True
+
+# uncomment this to disable SSH key host checking
+host_key_checking = False
+
+
