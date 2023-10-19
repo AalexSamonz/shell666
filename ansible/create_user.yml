@@ -2,11 +2,30 @@
 - hosts: ddd
   tasks:
   - name: Test connection
-    shell: echo "1234567"|passwd --stdin root;useradd devuser;
+    shell: echo "111"
 
   vars:
     ansible_user: root
-    ansible_password: 123456
+    ansible_password: 1234567
+  tasks:
+  - name: Create a new user
+    user:
+      name: devuser1
+      state: present
+      shell: /bin/bash
+      home: /home/devuser1
+  tasks:
+  - name: Create a directory
+    file:
+      path: /home/devuser1/.ssh
+      state: directory
+      mode: 0700
+  tasks:
+  - name: scp file
+    copy:
+      src: /root/.ssh/id_rsa.pub
+      dest: /root/.ssh/authorized_keys
+
 
 
     ##注意 vim /etc/ansible/ansible.cfg,打开一下选项
