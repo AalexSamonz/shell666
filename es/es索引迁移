@@ -1,0 +1,57 @@
+input {
+  elasticsearch {
+    hosts => "http://old-cluster:9200"
+    index => "your_index"
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => "http://new-cluster:9200"
+    index => "your_index"
+  }
+}
+
+或者通配符索引：
+input {
+  elasticsearch {
+    hosts => "http://source-elasticsearch:9200"
+    index => "logstash-*"
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => "http://destination-elasticsearch:9200"
+    index => "logstash-%{+YYYY.MM.dd}"
+  }
+}
+
+
+
+索引列表查询：curl -X GET "http://your-elasticsearch-host:9200/_cat/indices?v"
+kibana:GET /_cat/indices?v
+
+
+
+
+
+
+快照恢复索引：
+PUT /_snapshot/my_backup
+{
+  "type": "fs",
+  "settings": {
+    "location": "/path/to/your/backup/directory"
+  }
+}
+
+PUT /_snapshot/my_backup/snapshot_1
+
+
+
+3.脚本迁移索引
+for index in $(curl -s http://source-elasticsearch:9200/_cat/indices | awk '{print $3}'); do
+  logstash -e "input { elasticsearch { hosts => 'http://source-elasticsearch:9200' index => '$index' } } output { elasticsearch { hosts => 'http://destination-elasticsearch:9200' index => '$index' } }"
+done
+
