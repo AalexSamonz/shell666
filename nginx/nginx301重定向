@@ -1,0 +1,13 @@
+server {
+    listen 80;
+    server_name a.com;
+
+    location / {
+        rewrite ^/(.*)$ http://b.com/$1 permanent; #永久重定向
+    }
+
+    # 其他配置...
+}
+
+
+rewrite ^/(.*)$ http://b.com/$1 redirect; 临时重定向
